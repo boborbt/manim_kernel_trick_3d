@@ -7,17 +7,21 @@ import math
 class Kernel3D(ThreeDScene):
     NUM_EXAMPLES = 30
     QUAD_SP = 0.3 # Quadratic surface scaling parameters
-    LABELING_THRESHOLD = 1.5
-    RANDOM_SEED=42
+    LABELING_THRESHOLD = 1
+    RANDOM_SEED=99
 
     def construct(self):
         np.random.seed(self.RANDOM_SEED)
+
+        # Initial setup
         self.add_axes()
         self.add_data_points()
         self.wait(2)
 
-        self.animate_move_camera()
+        # Showing 3d scene
+        self.move_camera(0.8*np.pi/2, -0.45*np.pi)
 
+        # Applying the kernel trick
         kernel_text = Tex(r"$(x,y) \rightarrow (x^2, y^2)$", font_size=72)
         kernel_text.to_edge(UP, buff=0.5)
         kernel_text.to_edge(RIGHT, buff=0.5)
@@ -31,27 +35,22 @@ class Kernel3D(ThreeDScene):
         self.play(Unwrite(kernel_text))
         self.wait(1)
         
+        # Showing plane intersecting with the kernel
         linear_classifier_anim = self.add_linear_classifier()
         self.play(linear_classifier_anim)
-
         intersection_line = self.add_intersection_line()
         self.play(intersection_line)
         self.move_camera(np.pi/2, -0.45*np.pi)
         self.wait(2)
+
+        # Switching back to 2d scene and removing 3d surfaces
         self.move_camera(0, 0)
 
         self.play(Uncreate(self.quadratic_surface), Uncreate(self.linear_surface))
         self.remove(self.quadratic_surface)
         self.play(Uncreate(self.linear_classifier))
         self.remove(self.linear_classifier)
-        self.wait(2)
-
-    def animate_move_camera(self):
-        # Static movement of the camera (for debugging purposes)
-        # self.camera.set_phi(0.8*np.pi/2)
-        # self.camera.set_theta(-0.45*np.pi)
- 
-        self.move_camera(0.8*np.pi/2, -0.45*np.pi)
+        self.wait(2) 
 
     def add_axes(self):
         self.axes = ThreeDAxes()
@@ -60,7 +59,7 @@ class Kernel3D(ThreeDScene):
     def add_data_points(self):
         self.data_points = []
         self.labels = []
-        self.data_coords = np.random.normal(0.0, 1.0, (self.NUM_EXAMPLES, 2))
+        self.data_coords = np.random.normal(0.0, 2.0, (self.NUM_EXAMPLES, 2))
         self.data_coords = np.hstack((self.data_coords, np.zeros((self.NUM_EXAMPLES,1))))
 
         def labeling_rule(x, y): return 1 if (x**2 + y**2) > self.LABELING_THRESHOLD else -1
@@ -128,7 +127,7 @@ class Kernel3D(ThreeDScene):
 
     def add_intersection_line(self):
         intersection_line = Circle(
-            radius = math.sqrt(self.LABELING_THRESHOLD-0.2),
+            radius = math.sqrt(self.LABELING_THRESHOLD),
             color=RED
         )
 
