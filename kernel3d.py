@@ -5,10 +5,10 @@ import math
 
 
 class Kernel3D(ThreeDScene):
-    NUM_EXAMPLES = 30
+    NUM_EXAMPLES = 50
     QUAD_SP = 0.3 # Quadratic surface scaling parameters
     LABELING_THRESHOLD = 1
-    RANDOM_SEED=99
+    RANDOM_SEED=42
 
     def construct(self):
         np.random.seed(self.RANDOM_SEED)
@@ -36,12 +36,18 @@ class Kernel3D(ThreeDScene):
         self.wait(1)
         
         # Showing plane intersecting with the kernel
+        self.move_camera(np.pi/2, -0.45*np.pi)
+        self.wait(1)
+
         linear_classifier_anim = self.add_linear_classifier()
         self.play(linear_classifier_anim)
+
+        self.move_camera(0.8*np.pi/2, -0.45*np.pi)
+
         intersection_line = self.add_intersection_line()
         self.play(intersection_line)
-        self.move_camera(np.pi/2, -0.45*np.pi)
-        self.wait(2)
+
+        self.wait(1)
 
         # Switching back to 2d scene and removing 3d surfaces
         self.move_camera(0, 0)
@@ -59,8 +65,11 @@ class Kernel3D(ThreeDScene):
     def add_data_points(self):
         self.data_points = []
         self.labels = []
-        self.data_coords = np.random.normal(0.0, 2.0, (self.NUM_EXAMPLES, 2))
-        self.data_coords = np.hstack((self.data_coords, np.zeros((self.NUM_EXAMPLES,1))))
+        inner_examples = np.random.normal(0.0, 0.5, (int(self.NUM_EXAMPLES/2), 2))
+        outer_examples = np.random.normal(0.0, 2.0, (int(self.NUM_EXAMPLES/2), 2))
+        self.data_coords = np.vstack((inner_examples, outer_examples))
+        self.data_coords = np.hstack(
+            (self.data_coords, np.zeros((self.data_coords.shape[0], 1))))
 
         def labeling_rule(x, y): return 1 if (x**2 + y**2) > self.LABELING_THRESHOLD else -1
 
